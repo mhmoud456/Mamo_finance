@@ -1,0 +1,2 @@
+ALTER TABLE `user_settings` MODIFY COLUMN `defaultCurrency` varchar(3) NOT NULL DEFAULT 'SYP';--> statement-breakpoint
+ALTER TABLE `user_settings` ADD `usdToSypRate` decimal(18,4) DEFAULT '132' NOT NULL;

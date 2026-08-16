@@ -1,0 +1,41 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1786750488392,
+      "tag": "0000_fixed_cyclops",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1786750644987,
+      "tag": "0001_dapper_vision",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1786750657341,
+      "tag": "0002_classy_lenny_balinger",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1786751079023,
+      "tag": "0003_skinny_dragon_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1786832258816,
+      "tag": "0004_dazzling_shinko_yamashiro",
+      "breakpoints": true
+    }
+  ]
+}

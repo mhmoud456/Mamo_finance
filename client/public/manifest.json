@@ -1,0 +1,21 @@
+{
+  "name": "Mamo Finance",
+  "short_name": "Mamo Finance",
+  "description": "Personal finance management by Mamo",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F6FAF9",
+  "theme_color": "#0F766E",
+  "icons": [
+    {
+      "src": "/manus-storage/mamo-icon-192_01daa6a9.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/manus-storage/mamo-icon-512_45616034.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
