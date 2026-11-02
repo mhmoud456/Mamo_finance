@@ -1,22 +1,70 @@
-import * as Linking from "expo-linking";
-import * as WebBrowser from "expo-web-browser";
-import { clearSessionToken, saveSessionToken } from "./session";
+import "dotenv/config";
+import express from "express";
+import { createServer } from "http";
+import net from "net";
+import { createExpressMiddleware } from "@trpc/server/adapters/express";
+import { registerOAuthRoutes } from "./oauth";
+import { registerStorageProxy } from "./storageProxy";
+import { appRouter } from "../routers";
+import { createContext } from "./context";
+import { serveStatic, setupVite } from "./vite";
+import { validateEnv } from "./env";
 
-const apiUrl = "https://financemgr-5wcippfv.manus.space";
-const loginUrl = `${apiUrl}/api/oauth/mobile/start?redirectUri=`;
-
-export async function signInWithBrowser() {
-  const redirectUri = Linking.createURL("oauth");
-  const target = `${loginUrl}${encodeURIComponent(redirectUri)}`;
-  const result = await WebBrowser.openAuthSessionAsync(target, redirectUri);
-  if (result.type !== "success" || !result.url) return false;
-  const parsed = Linking.parse(result.url);
-  const token = typeof parsed.queryParams?.token === "string" ? parsed.queryParams.token : null;
-  if (!token) return false;
-  await saveSessionToken(token);
-  return true;
+function isPortAvailable(port: number): Promise<boolean> {
+  return new Promise(resolve => {
+    const server = net.createServer();
+    server.listen(port, () => {
+      server.close(() => resolve(true));
+    });
+    server.on("error", () => resolve(false));
+  });
 }
 
-export async function signOutMobile() {
-  await clearSessionToken();
+async function findAvailablePort(startPort: number = 3000): Promise<number> {
+  for (let port = startPort; port < startPort + 20; port++) {
+    if (await isPortAvailable(port)) {
+      return port;
+    }
+  }
+  throw new Error(`No available port found starting from ${startPort}`);
 }
+
+async function startServer() {
+  const missingEnv = validateEnv();
+  if (missingEnv.length > 0) {
+    console.warn("[startup] Continuing with missing env values; configure them before production deployment.");
+  }
+
+  const app = express();
+  const server = createServer(app);
+  app.use(express.json({ limit: "50mb" }));
+  app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  registerStorageProxy(app);
+  registerOAuthRoutes(app);
+  app.use(
+    "/api/trpc",
+    createExpressMiddleware({
+      router: appRouter,
+      createContext,
+    })
+  );
+
+  if (process.env.NODE_ENV === "development") {
+    await setupVite(app, server);
+  } else {
+    serveStatic(app);
+  }
+
+  const preferredPort = parseInt(process.env.PORT || "3000");
+  const port = await findAvailablePort(preferredPort);
+
+  if (port !== preferredPort) {
+    console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
+  }
+
+  server.listen(port, () => {
+    console.log(`Server running on http://localhost:${port}/`);
+  });
+}
+
+startServer().catch(console.error);

@@ -1,26 +1,20 @@
-import type { ExpoConfig } from "expo/config";
+import { createTRPCReact } from "@trpc/react-query";
+import { httpBatchLink } from "@trpc/client";
+import superjson from "superjson";
 
-const config: ExpoConfig = {
-  owner: "mhmoudmamo",
-  name: "Mamo Finance",
-  slug: "sarfati",
-  version: "1.0.5",
-  orientation: "portrait",
-  scheme: "sarfati",
-  userInterfaceStyle: "automatic",
-  icon: "./assets/mamo-icon-1024.png",
-  newArchEnabled: true,
-  experiments: { typedRoutes: true },
-  plugins: ["expo-secure-store", "expo-web-browser"],
-  android: { package: "com.sarfati.finance", versionCode: 7, adaptiveIcon: { foregroundImage: "./assets/mamo-icon-1024.png", backgroundColor: "#F6FAF9" } },
-  ios: { bundleIdentifier: "com.sarfati.finance", supportsTablet: true },
-  web: { bundler: "metro" },
-  extra: {
-    apiUrl: "https://financemgr-5wcippfv.manus.space",
-    oauthPortalUrl: "https://manus.im/app-auth",
-    appId: process.env.EXPO_PUBLIC_APP_ID ?? "",
-    eas: { projectId: "c7fa6b4d-f8dd-47ea-b531-c72187566c17" },
+import type { AppRouter } from "../../server/routers";
+import { getSessionToken } from "./session";
+
+const apiUrl = (process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3000").replace(/\/$/, "");
+
+export const trpc = createTRPCReact<AppRouter>();
+export const trpcLink = httpBatchLink({
+  url: `${apiUrl}/api/trpc`,
+  transformer: superjson,
+  async fetch(url, options) {
+    const token = await getSessionToken();
+    const headers = new Headers(options?.headers);
+    if (token) headers.set("Authorization", `Bearer ${token}`);
+    return fetch(url, { ...options, headers, credentials: "include" });
   },
-};
-
-export default config;
+});

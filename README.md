@@ -1,91 +1,54 @@
-# Mamo Finance — مدير الشؤون المالية الشخصية
+# Mamo Finance
 
-Mamo Finance تطبيق ويب لإدارة الدخل والمصروفات والميزانيات والأهداف والمعاملات المتكررة، مع واجهة عربية RTL وواجهة إنجليزية LTR ووضعين نهاري وليلي. يعتمد التطبيق على بيانات المستخدم الفعلية في قاعدة بيانات علائقية ولا ينشئ أرقامًا مالية تجريبية داخل الحسابات.
+## Local setup
 
-## المكدس
+This project was originally tied to a Manus-hosted backend and OAuth flow. The repository now supports environment-based configuration so it can run against your own backend and auth provider instead of a hardcoded host.
 
-| الطبقة | التقنية |
-|---|---|
-| الواجهة | React 19، Vite، Tailwind CSS 4، shadcn/ui |
-| الخادم | Express 4، tRPC 11، TypeScript |
-| قاعدة البيانات | Drizzle ORM مع MySQL/TiDB |
-| المصادقة | Manus OAuth والجلسات الموقعة |
-| الرسوم | Recharts |
-| الاختبارات | Vitest |
-| الموبايل | Expo/React Native scaffold داخل `mobile/` |
+## Required environment values
 
-اختير هذا المكدس لأن عقود tRPC والأنواع المشتركة تسمح بإعادة استخدام الواجهة الخلفية من الويب والموبايل، كما أن قالب المشروع يوفّر البنية اللازمة للمصادقة وقاعدة البيانات والتخزين.
+Create a root `.env` file and, if needed, a `mobile/.env` file.
 
-## متغيرات البيئة
+```bash
+cp .env.example .env
+cp mobile/.env.example mobile/.env
+```
 
-يحتاج الخادم إلى المتغيرات التالية في بيئة Manus أو بيئة النشر، ولا ينبغي وضع قيمها في ملفات المصدر أو Git:
+Required values include:
 
-| المتغير | الاستخدام |
-|---|---|
-| `DATABASE_URL` | رابط MySQL/TiDB للإنتاج والتطوير |
-| `JWT_SECRET` | توقيع جلسات التطبيق |
-| `VITE_APP_ID` | معرّف تطبيق OAuth |
-| `OAUTH_SERVER_URL` | عنوان خادم OAuth |
-| `VITE_OAUTH_PORTAL_URL` | بوابة تسجيل الدخول في الواجهة |
-| `BUILT_IN_FORGE_API_URL` | واجهات Manus المدمجة للخادم |
-| `BUILT_IN_FORGE_API_KEY` | مفتاح الخادم للواجهات المدمجة |
-| `VITE_FRONTEND_FORGE_API_URL` | عنوان الواجهات المدمجة للواجهة |
-| `VITE_FRONTEND_FORGE_API_KEY` | مفتاح الواجهة عند الحاجة |
-| `EXPO_PUBLIC_API_URL` | عنوان تطبيق الويب الذي يتصل به Expo |
+- `DATABASE_URL`
+- `JWT_SECRET`
+- `PUBLIC_APP_ORIGIN`
+- `VITE_APP_ID`
+- `OAUTH_SERVER_URL`
+- `VITE_OAUTH_PORTAL_URL`
+- `EXPO_PUBLIC_API_URL`
 
-في التطوير، استخدم قاعدة بيانات منفصلة وقيم OAuth مخصصة للتطوير. في الإنتاج، استخدم قاعدة بيانات منفصلة عن التطوير، وفعّل SSL عند توفره، ولا تعتمد على عناوين localhost.
+The app will still work in a local development setup when these values point to a local or hosted backend.
 
-## التشغيل والتثبيت
-
-شغّل نسخة الويب محليًا بالأوامر التالية بعد تجهيز `DATABASE_URL` وبيئة OAuth:
+## Run locally
 
 ```bash
 pnpm install
 pnpm dev
 ```
 
-افحص الأنواع والاختبارات والبناء بواسطة:
-
-```bash
-pnpm check
-pnpm test
-pnpm build
-```
-
-## قاعدة البيانات والمهاجرات
-
-المخطط موجود في `drizzle/schema.ts`، وتوجد ملفات SQL المولدة في `drizzle/`. الجداول الأساسية هي `users` و`transactions` و`categories` و`budgets` و`financial_goals` و`recurring_transactions` و`payment_methods` و`user_settings`، مع فهارس ومفاتيح أجنبية. عند تغيير المخطط:
-
-```bash
-pnpm drizzle-kit generate
-```
-
-راجع ملف SQL الناتج، ثم طبّقه في بيئة قاعدة البيانات باستخدام مسار ترحيل Manus المعتمد. لا تستخدم أوامر حذف مدمّرة من دون مراجعة البيانات أولًا. ينشئ التطبيق الفئات وطرق الدفع الافتراضية للمستخدم عند أول استعلام محمي بدل إدخال سجلات عامة مشتركة. لا توجد بيانات تجريبية مالية مزروعة تلقائيًا.
-
-## تشغيل نسخة الموبايل
-
-الهيكل الأولي في `mobile/` يستخدم Expo Router ويستعمل نفس عقود tRPC. لتشغيله بعد تثبيت تبعيات Expo:
+For the Expo app:
 
 ```bash
 cd mobile
 pnpm install
-EXPO_PUBLIC_API_URL=https://your-web-domain.example pnpm start
+EXPO_PUBLIC_API_URL=http://localhost:3000 pnpm start
 ```
 
-الشاشات الحالية في الموبايل تعرض لوحة التحكم والمعاملات والميزانيات والأهداف من الخادم. قبل نشر إصدار موبايل نهائي يجب إضافة OAuth deep link للموبايل، شاشة تأكيد الفئة بعد الإدخال السريع، وإكمال الإشعارات والملف الشخصي والإعدادات.
+## Production deployment checklist
 
-## ما هو منفذ حاليًا
+- Host the Node backend on Render/Railway/VPS
+- Host MySQL/TiDB and set `DATABASE_URL`
+- Set `PUBLIC_APP_ORIGIN` to the final public backend URL
+- Configure OAuth provider and update `VITE_OAUTH_PORTAL_URL`
+- Set `EXPO_PUBLIC_API_URL` to the production backend URL
+- Build the APK with Expo EAS or a signed Android build
 
-تتضمن نسخة الويب المصادقة المحمية، عزل `userId`، نموذج المعاملات وإجراءات CRUD الخلفية، البحث والتصفية حسب النوع والترتيب، الفئات الافتراضية وواجهة إنشاء الفئة، طرق الدفع، الإدخال السريع للمبلغ والوصف، لوحة تحكم حقيقية، عرض الميزانيات والأهداف والمعاملات المتكررة، رسومًا أولية للإنفاق حسب الفئة، تصدير CSV وJSON للمعاملات، تبديل RTL/LTR والوضعين البصريين وحفظ الإعدادات.
+## Important note
 
-## ما يحتاج إلى استكمال قبل الإصدار النهائي
-
-ما زالت واجهات إنشاء وتعديل الميزانيات والأهداف والمعاملات المتكررة وإدارة الفئات وطرق الدفع تحتاج إلى شاشات كاملة، كما تحتاج التحليلات المتقدمة مثل الإنفاق عبر الزمن والمقارنة الشهرية ومتوسط الإنفاق اليومي ومعدل الادخار وأكبر المصروفات إلى إجراءات وواجهات مخصصة. طبقة اللغة الطبيعية والأسئلة والملخصات والنصائح والتنبيهات الآلية تحتاج كذلك إلى تصميم خلفي مستقل واختبارات أمنية. تطبيق الموبايل الحالي scaffold عملي، لكنه ليس إصدارًا منشورًا نهائيًا إلى أن تكتمل مصادقة deep link وباقي الشاشات.
-
-## النشر
-
-للنشر على استضافة Manus، نفّذ `pnpm check` و`pnpm test` و`pnpm build`، ثم أنشئ checkpoint من المشروع واستخدم زر **Publish** في واجهة الإدارة. لا تحاول تشغيل خادم إضافي أو تغيير المنفذ؛ خادم Express الحالي يلتزم بمنفذ البيئة الذي تديره المنصة. اربط متغيرات الإنتاج في إعدادات Secrets، واستخدم عنوان النشر الناتج كقيمة `EXPO_PUBLIC_API_URL` لتطبيق الموبايل.
-
-## سياسة البيانات
-
-كل الأرقام المحمية بعد الدخول محسوبة من صفوف قاعدة البيانات وبحسب عملة المستخدم المختارة. لا تُجمع العملات المختلفة حسابيًا دون تحويل موثوق. أرقام صفحة الهبوط توضيحية تسويقية فقط ولا تمثل بيانات حساب حقيقي.
+The repository no longer hardcodes the Manus domain in the web or mobile runtime setup. Any external service such as OAuth or hosted APIs must be configured via environment variables before production use.
