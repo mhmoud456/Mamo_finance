@@ -23,7 +23,12 @@ Required values include:
 - `VITE_OAUTH_PORTAL_URL`
 - `EXPO_PUBLIC_API_URL`
 
-The app will still work in a local development setup when these values point to a local or hosted backend.
+For the next auth migration, also configure:
+
+- `AUTH_PROVIDER` (`manus` or `supabase`)
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
 
 ## Run locally
 
@@ -51,4 +56,4 @@ EXPO_PUBLIC_API_URL=http://localhost:3000 pnpm start
 
 ## Important note
 
-The repository no longer hardcodes the Manus domain in the web or mobile runtime setup. Any external service such as OAuth or hosted APIs must be configured via environment variables before production use.
+The repository no longer hardcodes the Manus domain in the web or mobile runtime setup. The project is now prepared to switch auth providers through environment variables. The actual external service credentials still need to be supplied by your account.
